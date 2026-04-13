@@ -1,9 +1,6 @@
-package main.java.com.netsentinel.model;
+package com.netsentinel.model;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Objects;
-
 public class LogEntry {
     private final String ip;
     private final String user;
@@ -15,7 +12,6 @@ public class LogEntry {
     private final String referer;
     private final String userAgent;
     
-    // Constructeur
     public LogEntry(String ip, String user, LocalDateTime timestamp, 
                    String method, String url, int statusCode, 
                    long responseSize, String referer, String userAgent) {
@@ -30,7 +26,6 @@ public class LogEntry {
         this.userAgent = userAgent;
     }
     
-    // Getters
     public String getIp() { return ip; }
     public String getUser() { return user; }
     public LocalDateTime getTimestamp() { return timestamp; }
@@ -41,33 +36,10 @@ public class LogEntry {
     public String getReferer() { return referer; }
     public String getUserAgent() { return userAgent; }
     
-    // toString() pour debug
     @Override
     public String toString() {
-        return String.format("%s - %s [%s] \"%s %s\" %d %d \"%s\" \"%s\"", 
-            ip, user, timestamp.format(DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z")),
+        return String.format("LogEntry{ip='%s', user='%s', timestamp=%s, method='%s', url='%s', statusCode=%d, responseSize=%d, referer='%s', userAgent='%s'}",
+            ip, user, timestamp,
             method, url, statusCode, responseSize, referer, userAgent);
-    }
-    
-    // equals() et hashCode() pour les tests et les Maps
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        LogEntry logEntry = (LogEntry) o;
-        return statusCode == logEntry.statusCode &&
-               responseSize == logEntry.responseSize &&
-               Objects.equals(ip, logEntry.ip) &&
-               Objects.equals(user, logEntry.user) &&
-               Objects.equals(timestamp, logEntry.timestamp) &&
-               Objects.equals(method, logEntry.method) &&
-               Objects.equals(url, logEntry.url) &&
-               Objects.equals(referer, logEntry.referer) &&
-               Objects.equals(userAgent, logEntry.userAgent);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(ip, user, timestamp, method, url, statusCode, responseSize, referer, userAgent);
     }
 }

@@ -1,45 +1,45 @@
-package main.java.com.netsentinel.parser;
+package com.netsentinel.parser;
+
+import com.netsentinel.model.LogEntry;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import main.java.com.netsentinel.model.LogEntry;
-
 
 public class LogParser {
-    private static final Pattern APACHE_PATTERN = Pattern.compile(
-    "^(\\S+)\\s+(-|\\S+)\\s+\\[([^\\]]+)\\]\\s+\"([A-Z]+)\\s+(.*?)\\s+HTTP/[\\d\\.]+\"\\s+(\\d{3})\\s+(\\d+|--)\\s+\"(.*?)\"\\s+\"(.*)\"\\s*$"
-);
+    
+    private static final Pattern APACHE_COMBINED_PATTERN = Pattern.compile(
+        "^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\[([^\\]]+)]\\s+\"([A-Z]+)\\s+(\\S+)\\s+HTTP/([\\d.]+)\"\\s+(\\d{3})\\s+(\\d+|-)\\s+\"([^\"]*)\"\\s+\"([^\"]*)\"\\s*$"
+    );
     
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = 
-        DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ssXXX");
+        DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH);
     
-    /**
-     * Parse un fichier de logs et retourne une List<LogEntry>
-     */
     public List<LogEntry> parseLogFile(String filename) throws IOException {
         List<LogEntry> logEntries = new ArrayList<>();
         int invalidLines = 0;
+        int lineNumber = 0;
         
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
-            int lineNumber = 0;
-            
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                LogEntry entry = parseSingleLine(line, lineNumber);
-                if (entry != null) {
-                    logEntries.add(entry);
-                } else {
-                    invalidLines++;
+                Optional<LogEntry> entry = parseSingleLine(line, lineNumber);
+                if (entry.isPresent()) {
+                    logEntries.add(entry.get());
+                    continue;
                 }
+                invalidLines++;
             }
         }
         
@@ -48,42 +48,44 @@ public class LogParser {
         return logEntries;
     }
     
-    /**
-     * Parse une seule ligne de log
-     */
-    private LogEntry parseSingleLine(String line, int lineNumber) {
-        Matcher matcher = APACHE_PATTERN.matcher(line);
+    public Optional<LogEntry> parseLine(String line) {
+        return parseSingleLine(line, 1);
+    }
+
+    private Optional<LogEntry> parseSingleLine(String line, int lineNumber) {
+        Matcher matcher = APACHE_COMBINED_PATTERN.matcher(line);
         
         if (!matcher.matches()) {
-            System.err.printf("Ligne %d invalide : %s%n", lineNumber, line.substring(0, Math.min(100, line.length())));
-            return null;
+            // Debug seulement pour les 5 premières erreurs
+            if (lineNumber <= 5) {
+                System.err.printf("Ligne %d invalide : %.100s%n", lineNumber, line);
+            }
+            return Optional.empty();
         }
         
         try {
             String ip = matcher.group(1);
-            String user = matcher.group(2);
-            String timestampStr = matcher.group(3);
-            String method = matcher.group(4);
-            String url = matcher.group(5);
-            int statusCode = Integer.parseInt(matcher.group(6));
-            long responseSize = parseSize(matcher.group(7));
-            String referer = matcher.group(8);
-            String userAgent = matcher.group(9);
+            String authUser = matcher.group(3);
+            String timestampStr = matcher.group(4);
+            String method = matcher.group(5);
+            String url = matcher.group(6);
+            int statusCode = Integer.parseInt(matcher.group(8));
+            String sizeStr = matcher.group(9);
+            String referer = matcher.group(10);
+            String userAgent = matcher.group(11);
             
-            LocalDateTime timestamp = LocalDateTime.parse(timestampStr, TIMESTAMP_FORMATTER);
+            OffsetDateTime offsetDateTime = OffsetDateTime.parse(timestampStr, TIMESTAMP_FORMATTER);
+            LocalDateTime timestamp = offsetDateTime.toLocalDateTime();
+            long responseSize = "-".equals(sizeStr) ? 0L : Long.parseLong(sizeStr);
+            String user = "-".equals(authUser) ? "anonymous" : authUser;
             
-            return new LogEntry(ip, user, timestamp, method, url, statusCode, 
-                              responseSize, referer, userAgent);
+            return Optional.of(new LogEntry(ip, user, timestamp, method, url, statusCode,
+                responseSize, referer, userAgent));
         } catch (DateTimeParseException | NumberFormatException e) {
-            System.err.printf("Erreur parsing ligne %d : %s%n", lineNumber, e.getMessage());
-            return null;
+            if (lineNumber <= 5) {
+                System.err.printf("Erreur parsing ligne %d : %s%n", lineNumber, e.getMessage());
+            }
+            return Optional.empty();
         }
-    }
-    
-    private long parseSize(String sizeStr) {
-        if ("-".equals(sizeStr)) {
-            return 0L;
-        }
-        return Long.parseLong(sizeStr);
     }
 }
