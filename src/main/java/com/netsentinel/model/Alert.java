@@ -1,28 +1,47 @@
+package com.netsentinel.model;
+
 import java.time.LocalDateTime;
 
 public class Alert {
-    private String ip;
-    private ThreatType threatType;
-    private Severity severity;
-    private LocalDateTime timestamp;
-    private String description;
+	private final ThreatType threatType;
+	private final Severity severity;
+	private final String sourceIp;
+	private final LocalDateTime detectedAt;
+	private final String message;
 
-    public Alert(String ip, ThreatType threatType, Severity severity,
-                 LocalDateTime timestamp, String description) {
-        this.ip = ip;
-        this.threatType = threatType;
-        this.severity = severity;
-        this.timestamp = timestamp;
-        this.description = description;
-    }
+	public Alert(ThreatType threatType, Severity severity, String sourceIp,
+				 LocalDateTime detectedAt, String message) {
+		this.threatType = threatType;
+		this.severity = severity;
+		this.sourceIp = sourceIp;
+		this.detectedAt = detectedAt;
+		this.message = message;
+	}
 
-    public String getIp() { return ip; }
-    public ThreatType getThreatType() { return threatType; }
-    public Severity getSeverity() { return severity; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public String getDescription() { return description; }
+	public ThreatType getThreatType() {
+		return threatType;
+	}
 
-    public void setSeverity(Severity severity) {
-        this.severity = severity;
-    }
+	public Severity getSeverity() {
+		return severity;
+	}
+
+	public String getSourceIp() {
+		return sourceIp;
+	}
+
+	public LocalDateTime getDetectedAt() {
+		return detectedAt;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	@Override
+	public String toString() {
+		String ipPart = sourceIp == null ? "global" : sourceIp;
+		return String.format("[%s][%s][%s] %s (%s)",
+			severity, threatType, ipPart, message, detectedAt);
+	}
 }

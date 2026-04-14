@@ -1,6 +1,8 @@
+package com.netsentinel.model;
+
 public enum ThreatType {
-    BRUTE_FORCE,
-    SQL_INJECTION,
-    DDOS,
-    SCAN
+	BRUTE_FORCE,
+	SQL_INJECTION,
+	DDOS,
+	SCAN
 }

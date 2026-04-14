@@ -1,81 +1,83 @@
-// BruteForceDetector.java
-import java.time.Duration;
-import java.util.*;
+package com.netsentinel.detector;
+
+import com.netsentinel.model.Alert;
+import com.netsentinel.model.LogEntry;
+import com.netsentinel.model.Severity;
+import com.netsentinel.model.ThreatType;
+
+import java.time.LocalDateTime;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BruteForceDetector implements ThreatDetector {
 
-    private final WhitelistService whitelistService;
-    private final int mediumThreshold;
-    private final int highThreshold;
-    private final Duration window;
+	private static final int WINDOW_MINUTES = 5;
+	private static final int MEDIUM_THRESHOLD = 10;
+	private static final int HIGH_THRESHOLD = 50;
 
-    public BruteForceDetector(WhitelistService whitelistService) {
-        this(whitelistService, 10, 50, Duration.ofMinutes(5));
-    }
+	@Override
+	public String getName() {
+		return "BruteForceDetector";
+	}
 
-    public BruteForceDetector(WhitelistService whitelistService,
-                              int mediumThreshold,
-                              int highThreshold,
-                              Duration window) {
-        this.whitelistService = whitelistService;
-        this.mediumThreshold = mediumThreshold;
-        this.highThreshold = highThreshold;
-        this.window = window;
-    }
+	@Override
+	public List<Alert> detect(List<LogEntry> logs) {
+		List<LogEntry> sortedLogs = logs.stream()
+			.sorted(Comparator.comparing(LogEntry::getTimestamp))
+			.toList();
 
-    @Override
-    public ThreatType getThreatType() {
-        return ThreatType.BRUTE_FORCE;
-    }
+		Map<String, Deque<LocalDateTime>> failedAttemptsByIp = new HashMap<>();
+		Map<String, Integer> maxAttemptsInWindowByIp = new HashMap<>();
+		Map<String, LocalDateTime> detectionTimeByIp = new HashMap<>();
 
-    @Override
-    public List<Alert> detect(List<LogEntry> logs) {
-        List<Alert> alerts = new ArrayList<>();
+		for (LogEntry entry : sortedLogs) {
+			if (!isAuthFailure(entry)) {
+				continue;
+			}
 
-        // regrouper les réponses 401/403 par IP
-        Map<String, List<LogEntry>> byIp = new HashMap<>();
-        for (LogEntry entry : logs) {
-            if (whitelistService.isWhitelisted(entry.getIp())) {
-                continue;
-            }
-            int status = entry.getStatusCode();
-            if (status == 401 || status == 403) {
-                byIp.computeIfAbsent(entry.getIp(), k -> new ArrayList<>()).add(entry);
-            }
-        }
+			Deque<LocalDateTime> window = failedAttemptsByIp.computeIfAbsent(entry.getIp(), key -> new ArrayDeque<>());
+			window.addLast(entry.getTimestamp());
 
-        for (Map.Entry<String, List<LogEntry>> e : byIp.entrySet()) {
-            String ip = e.getKey();
-            List<LogEntry> failures = e.getValue();
-            failures.sort(Comparator.comparing(LogEntry::getTimestamp));
+			LocalDateTime windowStart = entry.getTimestamp().minusMinutes(WINDOW_MINUTES);
+			while (!window.isEmpty() && window.peekFirst().isBefore(windowStart)) {
+				window.pollFirst();
+			}
 
-            int n = failures.size();
-            int left = 0;
+			int current = window.size();
+			int previous = maxAttemptsInWindowByIp.getOrDefault(entry.getIp(), 0);
+			if (current > previous) {
+				maxAttemptsInWindowByIp.put(entry.getIp(), current);
+				detectionTimeByIp.put(entry.getIp(), entry.getTimestamp());
+			}
+		}
 
-            for (int right = 0; right < n; right++) {
-                while (left < right &&
-                        Duration.between(failures.get(left).getTimestamp(),
-                                         failures.get(right).getTimestamp())
-                                .compareTo(window) > 0) {
-                    left++;
-                }
+		List<Alert> alerts = new ArrayList<>();
+		for (Map.Entry<String, Integer> candidate : maxAttemptsInWindowByIp.entrySet()) {
+			int attempts = candidate.getValue();
+			if (attempts <= MEDIUM_THRESHOLD) {
+				continue;
+			}
 
-                int count = right - left + 1;
-                if (count > mediumThreshold) {
-                    Severity severity = count > highThreshold ? Severity.HIGH : Severity.MEDIUM;
-                    Alert alert = new Alert(
-                            ip,
-                            ThreatType.BRUTE_FORCE,
-                            severity,
-                            failures.get(right).getTimestamp(),
-                            "Brute-force: " + count + " échecs 401/403 en moins de " + window.toMinutes() + " minutes"
-                    );
-                    alerts.add(alert);
-                    break; // une alerte par IP suffit
-                }
-            }
-        }
+			Severity severity = attempts > HIGH_THRESHOLD ? Severity.HIGH : Severity.MEDIUM;
+			String ip = candidate.getKey();
+			LocalDateTime detectedAt = detectionTimeByIp.getOrDefault(ip, LocalDateTime.now());
+			String message = String.format(
+				"Tentatives de connexion suspectes: %d reponses 401/403 en %d minutes",
+				attempts,
+				WINDOW_MINUTES
+			);
 
-        return alerts;
-    }
+			alerts.add(new Alert(ThreatType.BRUTE_FORCE, severity, ip, detectedAt, message));
+		}
+		return alerts;
+	}
+
+	private boolean isAuthFailure(LogEntry entry) {
+		return entry.getStatusCode() == 401 || entry.getStatusCode() == 403;
+	}
 }
