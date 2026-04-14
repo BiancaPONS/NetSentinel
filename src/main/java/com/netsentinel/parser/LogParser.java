@@ -43,7 +43,7 @@ public class LogParser {
             }
         }
         
-        System.out.printf("%d lignes parsées, %d lignes invalides ignorées%n", 
+        System.out.printf(" %d lignes parsées, %d lignes invalides ignorées%n", 
                          logEntries.size(), invalidLines);
         return logEntries;
     }
