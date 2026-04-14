@@ -4,5 +4,6 @@ com/netsentinel/detector/ScanDetector.class
 com/netsentinel/detector/ThreatDetector.class
 com/netsentinel/model/Alert.class
 com/netsentinel/detector/DdosDetector.class
+com/netsentinel/report/ReportGenerator$1.class
 com/netsentinel/detector/SqlInjectionDetector.class
 com/netsentinel/detector/BruteForceDetector.class

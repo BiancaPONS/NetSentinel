@@ -8,6 +8,7 @@ import com.netsentinel.detector.ThreatDetector;
 import com.netsentinel.model.Alert;
 import com.netsentinel.model.LogEntry;
 import com.netsentinel.parser.LogParser;
+import com.netsentinel.report.ReportGenerator;
 import com.netsentinel.service.LogIndexer;
 import com.netsentinel.service.StatisticsService;
 
@@ -22,11 +23,13 @@ public class Main {
 
     private static final String CLEAN_LOG_PATH = "src/main/resources/access_log_clean.txt";
     private static final String ATTACK_LOG_PATH = "src/main/resources/access_log_attack.txt";
+    private static final String REPORT_PATH = "target/netsentinel-report.html";
 
     public static void main(String[] args) {
         LogParser parser = new LogParser();
         LogIndexer indexer = new LogIndexer();
         StatisticsService statisticsService = new StatisticsService();
+        ReportGenerator reportGenerator = new ReportGenerator();
 
         try {
             String filePath = resolveInputFile(args);
@@ -50,6 +53,9 @@ public class Main {
 
             List<Alert> alerts = runThreatDetection(detectors, logs);
             printAlerts(alerts);
+
+            reportGenerator.generateSimpleReport(filePath, logs, alerts, statisticsService, REPORT_PATH);
+            System.out.printf("Rapport HTML genere: %s%n", REPORT_PATH);
         } catch (IOException e) {
             System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
         }
