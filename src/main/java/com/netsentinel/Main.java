@@ -10,6 +10,8 @@ import com.netsentinel.model.LogEntry;
 import com.netsentinel.parser.LogParser;
 import com.netsentinel.report.ReportGenerator;
 import com.netsentinel.service.LogIndexer;
+import com.netsentinel.service.CorrelationService;
+import com.netsentinel.service.WhitelistService;
 import com.netsentinel.service.StatisticsService;
 
 import java.io.IOException;
@@ -23,26 +25,30 @@ public class Main {
 
     private static final String CLEAN_LOG_PATH = "src/main/resources/access_log_clean.txt";
     private static final String ATTACK_LOG_PATH = "src/main/resources/access_log_attack.txt";
-    private static final String REPORT_PATH = "target/netsentinel-report.html";
+    private static final String REPORT_PATH = "target/rapport_securite.txt";
+    private static final String WHITELIST_PATH = "/whitelist.txt";
 
     public static void main(String[] args) {
         LogParser parser = new LogParser();
         LogIndexer indexer = new LogIndexer();
         StatisticsService statisticsService = new StatisticsService();
+        WhitelistService whitelistService = new WhitelistService(WHITELIST_PATH);
+        CorrelationService correlationService = new CorrelationService();
         ReportGenerator reportGenerator = new ReportGenerator();
 
         try {
             String filePath = resolveInputFile(args);
             List<LogEntry> logs = parser.parseLogFile(filePath);
+            List<LogEntry> filteredLogs = whitelistService.filterLogs(logs);
 
-            Map<String, List<LogEntry>> logsByIp = indexer.indexByIp(logs);
-            TreeMap<LocalDateTime, List<LogEntry>> logsByTime = indexer.indexByTime(logs);
+            Map<String, List<LogEntry>> logsByIp = indexer.indexByIp(filteredLogs);
+            TreeMap<LocalDateTime, List<LogEntry>> logsByTime = indexer.indexByTime(filteredLogs);
 
             System.out.printf("Fichier analyse: %s%n", filePath);
             System.out.printf("IPs indexees: %d%n", logsByIp.size());
             System.out.printf("Horodatages indexes: %d%n%n", logsByTime.size());
 
-            statisticsService.printDashboard(logs);
+            statisticsService.printDashboard(filteredLogs);
 
             List<ThreatDetector> detectors = List.of(
                 new BruteForceDetector(),
@@ -51,11 +57,13 @@ public class Main {
                 new ScanDetector()
             );
 
-            List<Alert> alerts = runThreatDetection(detectors, logs);
+            List<Alert> alerts = runThreatDetection(detectors, filteredLogs);
+            alerts = whitelistService.filterAlerts(alerts);
+            alerts = correlationService.correlate(alerts);
             printAlerts(alerts);
 
-            reportGenerator.generateSimpleReport(filePath, logs, alerts, statisticsService, REPORT_PATH);
-            System.out.printf("Rapport HTML genere: %s%n", REPORT_PATH);
+            reportGenerator.generateSecurityReport(filePath, filteredLogs, alerts, statisticsService, REPORT_PATH);
+            System.out.printf("Rapport texte genere: %s%n", REPORT_PATH);
         } catch (IOException e) {
             System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
         }

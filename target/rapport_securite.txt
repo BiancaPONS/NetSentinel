@@ -1,0 +1,350 @@
+===============================
+RAPPORT DE SECURITE NETSENTINEL
+===============================
+Fichier analyse          : src/main/resources/access_log_attack.txt
+Genere le                : 2026-04-14 16:09:32
+
+1) RESUME EXECUTIF
+------------------
+Total requetes analysees : 8935
+Total alertes            : 120
+
+Alertes par severite
+  - LOW      : 0
+  - MEDIUM   : 2
+  - HIGH     : 51
+  - CRITICAL : 67
+
+Top 10 IPs les plus dangereuses
+   1. 203.0.113.51        50 alertes
+   2. 198.51.100.11       32 alertes
+   3. 109.70.100.30       17 alertes
+   4. 45.33.32.156        13 alertes
+   5. 77.247.181.163       1 alertes
+   6. 91.240.118.50        1 alertes
+   7. 103.21.23.152        1 alertes
+   8. 198.51.100.10        1 alertes
+   9. 185.220.101.33       1 alertes
+  10. 91.240.118.51        1 alertes
+
+2) TIMELINE DES INCIDENTS
+-------------------------
+Date                | Severite | Type          | Source          | Message
+--------------------------------------------------------------------------------------------------------------
+2025-03-16 08:19:32 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 08:45:49 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 09:08:53 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+2025-03-16 09:11:54 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 09:17:50 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 09:17:59 | HIGH     | BRUTE_FORCE   | 203.0.113.50    | Tentatives de connexion suspectes: 120 reponses 401/403 en 5 minutes
+2025-03-16 09:21:34 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 09:22:04 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 09:25:20 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 09:27:51 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+2025-03-16 09:28:00 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 10:08:13 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 10:11:50 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 10:16:07 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 10:17:22 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 10:17:32 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+2025-03-16 10:18:44 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+2025-03-16 10:19:13 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 10:19:44 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 10:19:47 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 10:20:06 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 10:20:20 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+2025-03-16 10:21:48 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 10:21:55 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 10:22:32 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 10:22:43 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 10:23:58 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 10:24:46 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 10:27:09 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 10:27:32 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 10:28:38 | CRITICAL | SQL_INJECTION | 109.70.100.30   | Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+2025-03-16 10:32:07 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 10:32:24 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 10:33:15 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 10:34:39 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 10:39:53 | CRITICAL | BRUTE_FORCE   | 109.70.100.30   | Tentatives de connexion suspectes: 30 reponses 401/403 en 5 minutes
+2025-03-16 10:39:53 | CRITICAL | SCAN          | 109.70.100.30   | Acces a un chemin sensible: /administrator | Acces a un chemin sensible: /admin | Acces a un chemin sensible: /backup.sql | Acces a un chemin sensible: /wp-admin | Acces a un chemin sensible: /phpmyadmin
+2025-03-16 11:01:14 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 11:01:49 | HIGH     | SCAN          | 91.240.118.50   | User-Agent de scanner detecte: nikto | Acces a un chemin sensible: /phpinfo.php | Acces a un chemin sensible: /phpmyadmin | Acces a un chemin sensible: /admin | Acces a un chemin sensible: /wp-admin | Acces a un chemin sensible: /administrator | Acces a un chemin sensible: /admin/login | Acces a un chemin sensible: /.env | Acces a un chemin sensible: /wp-login.php | Acces a un chemin sensible: /.git/config | Acces a un chemin sensible: /backup.sql | Acces a un chemin sensible: /config.yml | Scan de repertoires: plus de 20 URLs 404 differentes
+2025-03-16 11:05:22 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+2025-03-16 11:12:57 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 11:17:18 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 11:33:44 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 11:42:30 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 11:44:26 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 11:47:56 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 11:49:08 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 11:51:10 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 12:00:14 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 12:14:46 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 12:24:04 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+2025-03-16 12:24:42 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 12:39:00 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 12:56:20 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+2025-03-16 12:59:54 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+2025-03-16 13:01:27 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 13:08:42 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 13:15:16 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 13:31:22 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 14:33:35 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 14:34:59 | HIGH     | BRUTE_FORCE   | 198.51.100.10   | Tentatives de connexion suspectes: 79 reponses 401/403 en 5 minutes
+2025-03-16 14:36:06 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+2025-03-16 14:36:34 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 14:45:33 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 14:46:15 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+2025-03-16 14:50:45 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 15:02:18 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 15:17:51 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 15:20:06 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 15:26:22 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 15:26:36 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 15:31:39 | HIGH     | SCAN          | 91.240.118.51   | User-Agent de scanner detecte: gobuster | Scan de repertoires: plus de 20 URLs 404 differentes
+2025-03-16 16:01:01 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 16:02:46 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 16:05:05 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 16:08:06 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 16:09:05 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=%27%20OR%201%3D1--
+2025-03-16 16:11:05 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+2025-03-16 16:15:49 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 16:18:16 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 16:18:47 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 16:22:24 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 16:26:14 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+2025-03-16 16:27:03 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 16:30:58 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 16:33:05 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+2025-03-16 16:35:35 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+2025-03-16 16:41:23 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 16:56:45 | HIGH     | SQL_INJECTION | 45.33.32.156    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 17:03:48 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+2025-03-16 17:12:38 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+2025-03-16 17:29:44 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+2025-03-16 17:42:35 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 17:44:46 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 18:08:28 | MEDIUM   | BRUTE_FORCE   | 185.220.101.33  | Tentatives de connexion suspectes: 25 reponses 401/403 en 5 minutes
+2025-03-16 18:14:06 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 18:17:57 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+2025-03-16 18:18:59 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 18:20:04 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+2025-03-16 18:20:12 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 18:22:49 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+2025-03-16 18:50:44 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+2025-03-16 19:06:53 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 19:08:41 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 19:32:13 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+2025-03-16 19:39:17 | HIGH     | SQL_INJECTION | 198.51.100.11   | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 19:48:06 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+2025-03-16 20:00:21 | HIGH     | DDOS          | 103.21.23.152   | Pic de trafic: 14 requetes en 10 secondes (seuil 13.79)
+2025-03-16 20:00:21 | CRITICAL | DDOS          | global          | Volume global anormal: 309 requetes en 10 secondes (seuil 68.95)
+2025-03-16 20:33:23 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+2025-03-16 20:40:54 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+2025-03-16 21:18:39 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 21:51:14 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+2025-03-16 21:52:09 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+2025-03-16 22:28:18 | MEDIUM   | SCAN          | 77.247.181.163  | Acces a un chemin sensible: /phpinfo.php | Acces a un chemin sensible: /wp-login.php | Acces a un chemin sensible: /.git/config | Acces a un chemin sensible: /phpmyadmin | Acces a un chemin sensible: /wp-admin
+2025-03-16 22:41:37 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+2025-03-16 22:42:32 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=%27%20OR%201%3D1--
+2025-03-16 22:44:48 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+2025-03-16 22:54:05 | CRITICAL | SQL_INJECTION | 203.0.113.51    | Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+2025-03-16 22:54:05 | HIGH     | SCAN          | 203.0.113.51    | User-Agent de scanner detecte: sqlmap
+
+3) DETAIL PAR IP SUSPECTE
+-------------------------
+103.21.23.152
+  Nombre total d'alertes: 1
+  Par type: DDOS=1 
+    - [2025-03-16 20:00:21][HIGH][DDOS] Pic de trafic: 14 requetes en 10 secondes (seuil 13.79)
+
+109.70.100.30
+  Nombre total d'alertes: 17
+  Par type: BRUTE_FORCE=1 SQL_INJECTION=15 SCAN=1 
+    - [2025-03-16 10:16:07][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 10:17:22][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 10:17:32][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+    - [2025-03-16 10:19:13][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 10:19:44][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 10:19:47][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 10:20:06][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 10:21:48][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 10:21:55][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 10:22:32][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 10:22:43][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 10:24:46][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 10:27:09][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 10:27:32][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 10:28:38][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+    - [2025-03-16 10:39:53][CRITICAL][BRUTE_FORCE] Tentatives de connexion suspectes: 30 reponses 401/403 en 5 minutes
+    - [2025-03-16 10:39:53][CRITICAL][SCAN] Acces a un chemin sensible: /administrator | Acces a un chemin sensible: /admin | Acces a un chemin sensible: /backup.sql | Acces a un chemin sensible: /wp-admin | Acces a un chemin sensible: /phpmyadmin
+
+185.220.101.33
+  Nombre total d'alertes: 1
+  Par type: BRUTE_FORCE=1 
+    - [2025-03-16 18:08:28][MEDIUM][BRUTE_FORCE] Tentatives de connexion suspectes: 25 reponses 401/403 en 5 minutes
+
+198.51.100.10
+  Nombre total d'alertes: 1
+  Par type: BRUTE_FORCE=1 
+    - [2025-03-16 14:34:59][HIGH][BRUTE_FORCE] Tentatives de connexion suspectes: 79 reponses 401/403 en 5 minutes
+
+198.51.100.11
+  Nombre total d'alertes: 32
+  Par type: SQL_INJECTION=32 
+    - [2025-03-16 10:11:50][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 10:18:44][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+    - [2025-03-16 10:23:58][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 10:32:07][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 10:33:15][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 10:34:39][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 11:01:14][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 11:47:56][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 11:51:10][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 12:14:46][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 12:24:42][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 12:59:54][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+    - [2025-03-16 13:08:42][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 13:31:22][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 14:46:15][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+    - [2025-03-16 14:50:45][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 15:02:18][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 15:26:22][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 15:26:36][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 16:05:05][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 16:08:06][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 16:26:14][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 16:27:03][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 16:35:35][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+    - [2025-03-16 17:03:48][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+    - [2025-03-16 17:29:44][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 18:14:06][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 18:17:57][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+    - [2025-03-16 18:22:49][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+    - [2025-03-16 19:08:41][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 19:32:13][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+    - [2025-03-16 19:39:17][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+
+203.0.113.50
+  Nombre total d'alertes: 1
+  Par type: BRUTE_FORCE=1 
+    - [2025-03-16 09:17:59][HIGH][BRUTE_FORCE] Tentatives de connexion suspectes: 120 reponses 401/403 en 5 minutes
+
+203.0.113.51
+  Nombre total d'alertes: 50
+  Par type: SQL_INJECTION=49 SCAN=1 
+    - [2025-03-16 08:19:32][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 08:45:49][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 09:08:53][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+    - [2025-03-16 09:11:54][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 09:17:50][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 09:21:34][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 09:22:04][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 09:25:20][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 09:27:51][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+    - [2025-03-16 10:20:20][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=admin'/*
+    - [2025-03-16 10:32:24][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 11:05:22][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+    - [2025-03-16 11:12:57][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 11:33:44][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 11:42:30][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 11:44:26][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 11:49:08][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 12:00:14][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 12:24:04][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+    - [2025-03-16 13:01:27][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/products?sort=name; DROP TABLE orders--
+    - [2025-03-16 14:33:35][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 14:36:06][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+    - [2025-03-16 14:45:33][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 15:17:51][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 16:02:46][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 16:09:05][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=%27%20OR%201%3D1--
+    - [2025-03-16 16:11:05][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+    - [2025-03-16 16:15:49][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 16:18:47][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 16:30:58][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 16:33:05][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q='; DROP TABLE users;--
+    - [2025-03-16 17:12:38][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 17:42:35][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 17:44:46][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 18:18:59][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 18:20:04][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+    - [2025-03-16 18:20:12][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 18:50:44][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/search?term=test' AND extractvalue(1,concat(0x7e,(SELECT version())))--
+    - [2025-03-16 19:06:53][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 19:48:06][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /profile?id=1' AND SLEEP(5)--
+    - [2025-03-16 20:33:23][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION ALL SELECT NULL,NULL,CONCAT(username,0x3a,password) FROM users--
+    - [2025-03-16 20:40:54][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /products?category=1 UNION SELECT password FROM admin_users--
+    - [2025-03-16 21:18:39][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 21:51:14][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 21:52:09][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 22:41:37][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 22:42:32][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=%27%20OR%201%3D1--
+    - [2025-03-16 22:44:48][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 22:54:05][CRITICAL][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=1' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),0x3a,FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--
+    - [2025-03-16 22:54:05][HIGH][SCAN] User-Agent de scanner detecte: sqlmap
+
+45.33.32.156
+  Nombre total d'alertes: 13
+  Par type: SQL_INJECTION=13 
+    - [2025-03-16 09:28:00][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 10:08:13][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' AND 1=CONVERT(int,(SELECT TOP 1 table_name FROM information_schema.tables))--
+    - [2025-03-16 11:17:18][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=admin'--&pass=x
+    - [2025-03-16 12:39:00][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 12:56:20][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT 1,2,3,4--
+    - [2025-03-16 13:15:16][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 14:36:34][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 15:20:06][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' OR 1=1--
+    - [2025-03-16 16:01:01][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 16:18:16][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /api/v1/users?id=1'; EXEC xp_cmdshell('whoami')--
+    - [2025-03-16 16:22:24][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /login?user=' OR 1=1--&pass=anything
+    - [2025-03-16 16:41:23][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+    - [2025-03-16 16:56:45][HIGH][SQL_INJECTION] Pattern SQL suspect detecte dans l'URL: /search?q=' UNION SELECT username,password FROM users--
+
+77.247.181.163
+  Nombre total d'alertes: 1
+  Par type: SCAN=1 
+    - [2025-03-16 22:28:18][MEDIUM][SCAN] Acces a un chemin sensible: /phpinfo.php | Acces a un chemin sensible: /wp-login.php | Acces a un chemin sensible: /.git/config | Acces a un chemin sensible: /phpmyadmin | Acces a un chemin sensible: /wp-admin
+
+91.240.118.50
+  Nombre total d'alertes: 1
+  Par type: SCAN=1 
+    - [2025-03-16 11:01:49][HIGH][SCAN] User-Agent de scanner detecte: nikto | Acces a un chemin sensible: /phpinfo.php | Acces a un chemin sensible: /phpmyadmin | Acces a un chemin sensible: /admin | Acces a un chemin sensible: /wp-admin | Acces a un chemin sensible: /administrator | Acces a un chemin sensible: /admin/login | Acces a un chemin sensible: /.env | Acces a un chemin sensible: /wp-login.php | Acces a un chemin sensible: /.git/config | Acces a un chemin sensible: /backup.sql | Acces a un chemin sensible: /config.yml | Scan de repertoires: plus de 20 URLs 404 differentes
+
+91.240.118.51
+  Nombre total d'alertes: 1
+  Par type: SCAN=1 
+    - [2025-03-16 15:31:39][HIGH][SCAN] User-Agent de scanner detecte: gobuster | Scan de repertoires: plus de 20 URLs 404 differentes
+
+4) RECOMMANDATIONS
+------------------
+- BRUTE_FORCE  : Appliquer du rate limiting, MFA, verrouillage temporaire des comptes.
+- SQL_INJECTION: Utiliser des requetes parametrees et renforcer la validation des entrees.
+- DDOS         : Activer WAF/CDN/scrubbing et surveiller les pics en temps reel.
+- SCAN         : Reduire la surface exposee et alerter sur la reconnaissance agressive.
+
+5) REGLES DE BLOCAGE
+--------------------
+- iptables -A INPUT -s 109.70.100.30 -j DROP
+- iptables -A INPUT -s 198.51.100.10 -j DROP
+- iptables -A INPUT -s 203.0.113.50 -j DROP
+- iptables -A INPUT -s 203.0.113.51 -j DROP
+- iptables -A INPUT -s 45.33.32.156 -j DROP
+- iptables -A INPUT -s 198.51.100.11 -j DROP
+- iptables -A INPUT -s 103.21.23.152 -j DROP
+- iptables -A INPUT -s 91.240.118.50 -j DROP
+- iptables -A INPUT -s 91.240.118.51 -j DROP
+
+6) SURFACES D'ATTAQUE RESIDUELLES
+---------------------------------
+- Les heuristiques peuvent etre contournees en restant juste sous les seuils.
+- Les attaquants peuvent alterner IPs/proxies et ralentir le rythme pour eviter la detection.
+- Des faux positifs restent possibles sur certains motifs ambigus dans URL/User-Agent.
+
+7) PROPOSITIONS D'AMELIORATION
+------------------------------
+- Rendre les seuils de detection configurables (fichier de config ou variables).
+- Ajouter decode URL + normalisation avancee avant detection SQLi.
+- Integrer des donnees de reputation IP/ASN et exporter vers SIEM.
+- Ajouter des tests de non-regression sur jeux de logs attaques/legitimes.

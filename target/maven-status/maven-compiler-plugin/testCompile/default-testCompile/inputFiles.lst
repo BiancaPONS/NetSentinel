@@ -1,6 +1,1 @@
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/detector/BruteForceDetectorTest.java
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/parser/LogParserTest.java
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/detector/WhitelistTest.java
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/detector/CorrelationServiceTest.java
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/service/StatisticsServiceTest.java
-/home/tymml/NetSentinel/src/test/java/com/netsentinel/detector/SqlInjectionDetectorTest.java
+/home/tymml/NetSentinel/src/test/java/com/netsentinel/NetSentinelSecurityTest.java

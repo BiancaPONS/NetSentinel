@@ -17,11 +17,16 @@ public class ScanDetector implements ThreatDetector {
 
 	private static final Set<String> SENSITIVE_PATHS = Set.of(
 		"/admin",
+		"/administrator",
+		"/admin/login",
 		"/wp-login.php",
+		"/wp-admin",
 		"/.env",
 		"/phpmyadmin",
+		"/phpinfo.php",
 		"/config.yml",
 		"/.git/config",
+		"/.git/HEAD",
 		"/backup.sql"
 	);
 
@@ -102,6 +107,10 @@ public class ScanDetector implements ThreatDetector {
 		int queryIndex = path.indexOf('?');
 		if (queryIndex >= 0) {
 			path = path.substring(0, queryIndex);
+		}
+		int fragmentIndex = path.indexOf('#');
+		if (fragmentIndex >= 0) {
+			path = path.substring(0, fragmentIndex);
 		}
 		return path.isBlank() ? "/" : path;
 	}

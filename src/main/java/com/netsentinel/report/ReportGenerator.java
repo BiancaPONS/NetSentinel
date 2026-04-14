@@ -3,6 +3,7 @@ package com.netsentinel.report;
 import com.netsentinel.model.Alert;
 import com.netsentinel.model.LogEntry;
 import com.netsentinel.model.Severity;
+import com.netsentinel.model.ThreatType;
 import com.netsentinel.service.StatisticsService;
 
 import java.io.IOException;
@@ -11,205 +12,208 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class ReportGenerator {
 
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-	public void generateSimpleReport(
-		String analyzedFile,
-		List<LogEntry> logs,
-		List<Alert> alerts,
-		StatisticsService statisticsService,
-		String outputFilePath
-	) throws IOException {
-		long totalRequests = statisticsService.totalRequests(logs);
-		Map<String, Long> topIps = statisticsService.topIps(logs, 10);
-		Map<Integer, Long> statusCodes = statisticsService.statusCodeDistribution(logs);
-		Map<String, Long> topUrls = statisticsService.topUrls(logs, 10);
+    public void generateSecurityReport(
+        String analyzedFile,
+        List<LogEntry> logs,
+        List<Alert> alerts,
+        StatisticsService statisticsService,
+        String outputFilePath
+    ) throws IOException {
+        StringBuilder report = new StringBuilder();
 
-		long criticalAlerts = alerts.stream().filter(alert -> alert.getSeverity() == Severity.CRITICAL).count();
-		long highAlerts = alerts.stream().filter(alert -> alert.getSeverity() == Severity.HIGH).count();
+        appendTitle(report, "RAPPORT DE SECURITE NETSENTINEL");
+        appendKeyValue(report, "Fichier analyse", analyzedFile);
+        appendKeyValue(report, "Genere le", LocalDateTime.now().format(DATE_FORMATTER));
+        report.append('\n');
 
-		StringBuilder html = new StringBuilder();
-		html.append("<!DOCTYPE html>\n");
-		html.append("<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n");
-		html.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-		html.append("<title>NetSentinel - Rapport</title>\n");
-		html.append("<style>");
-		html.append(":root{--bg:#f2f5f8;--text:#18212b;--muted:#627181;--card:#ffffff;--line:#dce5ee;--accent:#0f766e;--accent-soft:#dff7f3;--alert:#9a3412;}");
-		html.append("*{box-sizing:border-box;}body{font-family:\"Trebuchet MS\",\"Segoe UI\",sans-serif;margin:0;color:var(--text);");
-		html.append("background:radial-gradient(circle at 15% -10%,#d8f6e8 0%,transparent 28%),radial-gradient(circle at 90% 0%,#dbeafe 0%,transparent 26%),var(--bg);}");
-		html.append(".container{max-width:1060px;margin:0 auto;padding:24px 16px 40px;}");
-		html.append(".hero{background:linear-gradient(120deg,#0b3b56,#0f766e);color:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 12px 28px rgba(11,59,86,.22);}");
-		html.append("h1{margin:0;font-size:1.6rem;letter-spacing:.4px;}h2{margin:26px 0 10px;font-size:1.05rem;}");
-		html.append(".subtitle{opacity:.9;font-size:.92rem;margin-top:6px;}");
-		html.append(".cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px;}");
-		html.append(".card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(16,24,40,.05);}");
-		html.append(".card .label{font-size:.76rem;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);} .card .value{font-size:1.55rem;font-weight:800;margin-top:6px;}");
-		html.append(".split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}@media(max-width:860px){.split{grid-template-columns:1fr;}}");
-		html.append(".panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}");
-		html.append("table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}");
-		html.append("th,td{text-align:left;padding:10px;border-bottom:1px solid #eaf0f6;vertical-align:top;font-size:.92rem;}th{background:#f8fbfe;font-weight:700;}tr:last-child td{border-bottom:none;}");
-		html.append(".bar-row{display:grid;grid-template-columns:minmax(120px,1fr) 1.4fr auto;gap:10px;align-items:center;margin:8px 0;}");
-		html.append(".bar-key{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem;color:#243647;}");
-		html.append(".bar-wrap{height:10px;background:#e9f1f7;border-radius:999px;overflow:hidden;}");
-		html.append(".bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#14b8a6);}");
-		html.append(".bar-val{font-size:.83rem;color:var(--muted);font-weight:700;}");
-		html.append(".tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.74rem;font-weight:700;}");
-		html.append(".critical{background:#fee2e2;color:#991b1b;}.high{background:#ffedd5;color:var(--alert);}.medium{background:#e0ecff;color:#1d4ed8;}.low{background:#e8f7ef;color:#166534;}");
-		html.append(".empty{background:#fff;border:1px dashed #c6d3e2;border-radius:12px;padding:14px;color:#516171;}");
-		html.append("</style>\n</head>\n<body>\n<div class=\"container\">\n");
+        appendExecutiveSummary(report, logs, alerts, statisticsService);
+        appendTimeline(report, alerts);
+        appendDetailsByIp(report, alerts);
+        appendRecommendations(report);
+        appendBlockingRules(report, alerts);
+        appendResidualRisks(report);
+        appendImprovements(report);
 
-		html.append("<section class=\"hero\">\n<h1>Rapport NetSentinel</h1>\n");
-		html.append("<div class=\"subtitle\">Genere le ")
-			.append(escapeHtml(LocalDateTime.now().format(DATE_FORMATTER)))
-			.append(" | Fichier analyse: ")
-			.append(escapeHtml(analyzedFile))
-			.append("</div>\n</section>\n");
+        Path outputPath = Path.of(outputFilePath);
+        Path parent = outputPath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        Files.writeString(outputPath, report.toString(), StandardCharsets.UTF_8);
+    }
 
-		html.append("<div class=\"cards\">\n");
-		html.append(metricCard("Requetes", String.valueOf(totalRequests)));
-		html.append(metricCard("IPs uniques", String.valueOf(logs.stream().map(LogEntry::getIp).distinct().count())));
-		html.append(metricCard("Alertes", String.valueOf(alerts.size())));
-		html.append(metricCard("Critiques", String.valueOf(criticalAlerts)));
-		html.append(metricCard("Hautes", String.valueOf(highAlerts)));
-		html.append("</div>\n");
+    private void appendExecutiveSummary(StringBuilder report, List<LogEntry> logs, List<Alert> alerts,
+                                        StatisticsService statisticsService) {
+        appendSectionHeader(report, "1) RESUME EXECUTIF");
+        appendKeyValue(report, "Total requetes analysees", String.valueOf(statisticsService.totalRequests(logs)));
+        appendKeyValue(report, "Total alertes", String.valueOf(alerts.size()));
 
-		html.append("<h2>Graphes rapides</h2>\n");
-		html.append("<div class=\"split\">\n");
-		html.append("<div class=\"panel\"><strong>Top IP</strong>");
-		html.append(buildBarChart(topIps));
-		html.append("</div>");
-		html.append("<div class=\"panel\"><strong>Codes HTTP</strong>");
-		html.append(buildBarChart(statusCodes));
-		html.append("</div>");
-		html.append("</div>\n");
+        report.append('\n').append("Alertes par severite").append('\n');
+        for (Severity severity : Severity.values()) {
+            long count = alerts.stream().filter(alert -> alert.getSeverity() == severity).count();
+            report.append(String.format("  - %-8s : %d%n", severity, count));
+        }
 
-		html.append("<h2>Top IP (tableau)</h2>\n");
-		html.append(buildCountTable(topIps, "IP", "Requetes"));
+        report.append('\n').append("Top 10 IPs les plus dangereuses").append('\n');
+        Map<String, Long> dangerousIps = alerts.stream()
+            .filter(alert -> alert.getIp() != null)
+            .collect(Collectors.groupingBy(Alert::getIp, Collectors.counting()))
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder()))
+            .limit(10)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (left, right) -> left, LinkedHashMap::new));
 
-		html.append("<h2>Codes HTTP (tableau)</h2>\n");
-		html.append(buildCountTable(statusCodes, "Code", "Occurrences"));
+        if (dangerousIps.isEmpty()) {
+            report.append("  - Aucune alerte liee a une IP\n");
+        } else {
+            int rank = 1;
+            for (Map.Entry<String, Long> entry : dangerousIps.entrySet()) {
+                report.append(String.format("  %2d. %-16s  %4d alertes%n", rank, entry.getKey(), entry.getValue()));
+                rank++;
+            }
+        }
+        report.append('\n');
+    }
 
-		html.append("<h2>Top URLs</h2>\n");
-		html.append(buildCountTable(topUrls, "URL", "Requetes"));
+    private void appendTimeline(StringBuilder report, List<Alert> alerts) {
+        appendSectionHeader(report, "2) TIMELINE DES INCIDENTS");
+        List<Alert> sortedAlerts = new ArrayList<>(alerts);
+        sortedAlerts.sort(Comparator.comparing(Alert::getDetectedAt));
 
-		html.append("<h2>Alertes de securite</h2>\n");
-		html.append(buildAlertsTable(alerts));
+        if (sortedAlerts.isEmpty()) {
+            report.append("Aucune alerte detectee.\n\n");
+            return;
+        }
 
-		html.append("</div>\n</body>\n</html>\n");
+        report.append(String.format("%-19s | %-8s | %-13s | %-15s | %s%n",
+            "Date", "Severite", "Type", "Source", "Message"));
+        report.append(repeat('-', 110)).append('\n');
 
-		Path outputPath = Path.of(outputFilePath);
-		Path parent = outputPath.getParent();
-		if (parent != null) {
-			Files.createDirectories(parent);
-		}
-		Files.writeString(outputPath, html.toString(), StandardCharsets.UTF_8);
-	}
+        for (Alert alert : sortedAlerts) {
+            String source = alert.getIp() == null ? "global" : alert.getIp();
+            report.append(String.format("%-19s | %-8s | %-13s | %-15s | %s%n",
+                alert.getDetectedAt().format(DATE_FORMATTER),
+                alert.getSeverity(),
+                alert.getThreatType(),
+                source,
+                alert.getMessage()));
+        }
+        report.append('\n');
+    }
 
-	private String metricCard(String label, String value) {
-		return "<div class=\"card\"><div class=\"label\">" + escapeHtml(label) + "</div><div class=\"value\">"
-			+ escapeHtml(value) + "</div></div>\n";
-	}
+    private void appendDetailsByIp(StringBuilder report, List<Alert> alerts) {
+        appendSectionHeader(report, "3) DETAIL PAR IP SUSPECTE");
+        Map<String, List<Alert>> alertsByIp = alerts.stream()
+            .filter(alert -> alert.getIp() != null)
+            .collect(Collectors.groupingBy(Alert::getIp, TreeMap::new, Collectors.toList()));
 
-	private String buildCountTable(Map<?, Long> map, String col1, String col2) {
-		if (map.isEmpty()) {
-			return "<div class=\"empty\">Aucune donnee</div>\n";
-		}
+        if (alertsByIp.isEmpty()) {
+            report.append("Aucune IP suspecte detectee.\n\n");
+            return;
+        }
 
-		StringBuilder table = new StringBuilder();
-		table.append("<table><thead><tr><th>")
-			.append(escapeHtml(col1))
-			.append("</th><th>")
-			.append(escapeHtml(col2))
-			.append("</th></tr></thead><tbody>");
+        for (Map.Entry<String, List<Alert>> entry : alertsByIp.entrySet()) {
+            String ip = entry.getKey();
+            List<Alert> ipAlerts = entry.getValue();
 
-		for (Map.Entry<?, Long> entry : map.entrySet()) {
-			table.append("<tr><td>")
-				.append(escapeHtml(String.valueOf(entry.getKey())))
-				.append("</td><td>")
-				.append(entry.getValue())
-				.append("</td></tr>");
-		}
+            report.append(ip).append('\n');
+            report.append("  Nombre total d'alertes: ").append(ipAlerts.size()).append('\n');
 
-		table.append("</tbody></table>\n");
-		return table.toString();
-	}
+            Map<ThreatType, Long> threatCounts = ipAlerts.stream()
+                .collect(Collectors.groupingBy(Alert::getThreatType, Collectors.counting()));
+            report.append("  Par type: ");
+            for (ThreatType threatType : ThreatType.values()) {
+                long count = threatCounts.getOrDefault(threatType, 0L);
+                if (count > 0) {
+                    report.append(threatType).append('=').append(count).append(' ');
+                }
+            }
+            report.append('\n');
 
-	private String buildBarChart(Map<?, Long> map) {
-		if (map.isEmpty()) {
-			return "<div class=\"empty\">Aucune donnee</div>\n";
-		}
+            ipAlerts.stream()
+                .sorted(Comparator.comparing(Alert::getDetectedAt))
+                .forEach(alert -> report.append(String.format("    - [%s][%s][%s] %s%n",
+                    alert.getDetectedAt().format(DATE_FORMATTER),
+                    alert.getSeverity(),
+                    alert.getThreatType(),
+                    alert.getMessage())));
 
-		long max = map.values().stream().mapToLong(Long::longValue).max().orElse(1L);
-		StringBuilder bars = new StringBuilder();
-		bars.append("<div>");
-		for (Map.Entry<?, Long> entry : map.entrySet()) {
-			double pct = max == 0 ? 0.0 : (entry.getValue() * 100.0 / max);
-			bars.append("<div class=\"bar-row\"><div class=\"bar-key\">")
-				.append(escapeHtml(String.valueOf(entry.getKey())))
-				.append("</div><div class=\"bar-wrap\"><div class=\"bar-fill\" style=\"width:")
-				.append(String.format("%.1f", pct))
-				.append("%\"></div></div><div class=\"bar-val\">")
-				.append(entry.getValue())
-				.append("</div></div>");
-		}
-		bars.append("</div>");
-		return bars.toString();
-	}
+            report.append('\n');
+        }
+    }
 
-	private String buildAlertsTable(List<Alert> alerts) {
-		if (alerts.isEmpty()) {
-			return "<div class=\"empty\">Aucune alerte detectee</div>\n";
-		}
+    private void appendRecommendations(StringBuilder report) {
+        appendSectionHeader(report, "4) RECOMMANDATIONS");
+        report.append("- BRUTE_FORCE  : Appliquer du rate limiting, MFA, verrouillage temporaire des comptes.\n");
+        report.append("- SQL_INJECTION: Utiliser des requetes parametrees et renforcer la validation des entrees.\n");
+        report.append("- DDOS         : Activer WAF/CDN/scrubbing et surveiller les pics en temps reel.\n");
+        report.append("- SCAN         : Reduire la surface exposee et alerter sur la reconnaissance agressive.\n\n");
+    }
 
-		StringBuilder table = new StringBuilder();
-		table.append("<table><thead><tr><th>Date</th><th>Gravite</th><th>Type</th><th>IP</th><th>Message</th></tr></thead><tbody>");
+    private void appendBlockingRules(StringBuilder report, List<Alert> alerts) {
+        appendSectionHeader(report, "5) REGLES DE BLOCAGE");
+        Set<String> blockedIps = alerts.stream()
+            .filter(alert -> alert.getIp() != null)
+            .filter(alert -> alert.getSeverity() == Severity.HIGH || alert.getSeverity() == Severity.CRITICAL)
+            .map(Alert::getIp)
+            .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
 
-		alerts.stream()
-			.sorted((left, right) -> left.getDetectedAt().compareTo(right.getDetectedAt()))
-			.forEach(alert -> {
-				String css = severityClass(alert.getSeverity());
-				table.append("<tr><td>")
-					.append(escapeHtml(alert.getDetectedAt().format(DATE_FORMATTER)))
-					.append("</td><td><span class=\"tag ")
-					.append(css)
-					.append("\">")
-					.append(escapeHtml(alert.getSeverity().name()))
-					.append("</span></td><td>")
-					.append(escapeHtml(alert.getThreatType().name()))
-					.append("</td><td>")
-					.append(escapeHtml(alert.getSourceIp() == null ? "global" : alert.getSourceIp()))
-					.append("</td><td>")
-					.append(escapeHtml(alert.getMessage()))
-					.append("</td></tr>");
-			});
+        if (blockedIps.isEmpty()) {
+            report.append("Aucune IP a bloquer.\n\n");
+            return;
+        }
 
-		table.append("</tbody></table>\n");
-		return table.toString();
-	}
+        for (String ip : blockedIps) {
+            report.append("- iptables -A INPUT -s ").append(ip).append(" -j DROP\n");
+        }
+        report.append('\n');
+    }
 
-	private String severityClass(Severity severity) {
-		return switch (severity) {
-			case CRITICAL -> "critical";
-			case HIGH -> "high";
-			case MEDIUM -> "medium";
-			case LOW -> "low";
-		};
-	}
+    private void appendResidualRisks(StringBuilder report) {
+        appendSectionHeader(report, "6) SURFACES D'ATTAQUE RESIDUELLES");
+        report.append("- Les heuristiques peuvent etre contournees en restant juste sous les seuils.\n");
+        report.append("- Les attaquants peuvent alterner IPs/proxies et ralentir le rythme pour eviter la detection.\n");
+        report.append("- Des faux positifs restent possibles sur certains motifs ambigus dans URL/User-Agent.\n\n");
+    }
 
-	private String escapeHtml(String text) {
-		if (text == null) {
-			return "";
-		}
-		return text
-			.replace("&", "&amp;")
-			.replace("<", "&lt;")
-			.replace(">", "&gt;")
-			.replace("\"", "&quot;")
-			.replace("'", "&#39;");
-	}
+    private void appendImprovements(StringBuilder report) {
+        appendSectionHeader(report, "7) PROPOSITIONS D'AMELIORATION");
+        report.append("- Rendre les seuils de detection configurables (fichier de config ou variables).\n");
+        report.append("- Ajouter decode URL + normalisation avancee avant detection SQLi.\n");
+        report.append("- Integrer des donnees de reputation IP/ASN et exporter vers SIEM.\n");
+        report.append("- Ajouter des tests de non-regression sur jeux de logs attaques/legitimes.\n");
+    }
+
+    private void appendTitle(StringBuilder report, String title) {
+        report.append(repeat('=', title.length())).append('\n');
+        report.append(title).append('\n');
+        report.append(repeat('=', title.length())).append('\n');
+    }
+
+    private void appendSectionHeader(StringBuilder report, String title) {
+        report.append(title).append('\n');
+        report.append(repeat('-', title.length())).append('\n');
+    }
+
+    private void appendKeyValue(StringBuilder report, String key, String value) {
+        report.append(String.format("%-24s : %s%n", key, value));
+    }
+
+    private String repeat(char c, int count) {
+        return String.valueOf(c).repeat(Math.max(0, count));
+    }
 }

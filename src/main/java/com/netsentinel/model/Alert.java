@@ -26,8 +26,16 @@ public class Alert {
 		return severity;
 	}
 
+	public String getIp() {
+		return sourceIp;
+	}
+
 	public String getSourceIp() {
 		return sourceIp;
+	}
+
+	public Alert withSeverity(Severity newSeverity) {
+		return new Alert(threatType, newSeverity, sourceIp, detectedAt, message);
 	}
 
 	public LocalDateTime getDetectedAt() {
